@@ -1,0 +1,80 @@
+services:
+  postgres:
+    image: postgres:16.4
+    environment:
+      POSTGRES_USER: benchmark
+      POSTGRES_PASSWORD: benchmark
+      POSTGRES_DB: benchmark
+    # Sem publicação de porta para o host de propósito: só as APIs precisam
+    # falar com o banco (rede interna do compose). Evita colidir com uma
+    # instância de Postgres já rodando na máquina do desenvolvedor. Para
+    # inspecionar o banco manualmente, use `docker compose exec postgres psql ...`.
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    cpus: 2.0
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U benchmark -d benchmark"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  mongo:
+    image: mongo:7.0.14
+    # Sem publicação de porta para o host — mesmo raciocínio do serviço
+    # postgres acima. Para inspecionar: `docker compose exec mongo mongosh`.
+    volumes:
+      - mongodata:/data/db
+    cpus: 2.0
+    mem_limit: 2g
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  benchmark-postgresql-api:
+    build:
+      context: .
+      dockerfile: src/Benchmark.PostgreSql.Api/Dockerfile
+    environment:
+      POSTGRES_CONNECTION: "Host=postgres;Port=5432;Username=benchmark;Password=benchmark;Database=benchmark"
+    ports:
+      - "5001:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    cpus: 1.0
+    mem_limit: 1g
+
+  benchmark-mongodb-api:
+    build:
+      context: .
+      dockerfile: src/Benchmark.MongoDb.Api/Dockerfile
+    environment:
+      MONGO_CONNECTION: "mongodb://mongo:27017"
+    ports:
+      - "5002:8080"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    cpus: 1.0
+    mem_limit: 1g
+
+  # Executor de carga (k6). Não sobe com "docker compose up" (perfil "tools") —
+  # é chamado pelo Benchmark.Runner via "docker compose run --rm k6 run ...".
+  # network_mode: host faz com que BASE_URL=http://localhost:500x dentro do
+  # container aponte para as APIs publicadas no host (válido em Linux; no
+  # Docker Desktop/Mac/Windows, instale o k6 localmente como alternativa —
+  # ver README).
+  k6:
+    image: grafana/k6:0.54.0
+    profiles: ["tools"]
+    network_mode: "host"
+    volumes:
+      - ./performance-tests:/scripts:ro
+      - ./results:/results
+
+volumes:
+  pgdata:
+  mongodata:

@@ -1,0 +1,31 @@
+{
+  "seed": 20260829,
+  "bancos": {
+    "PostgreSQL": { "baseUrl": "http://localhost:5001", "dockerService": "postgres" },
+    "MongoDB": { "baseUrl": "http://localhost:5002", "dockerService": "mongo" }
+  },
+  "volumes": [500, 2000],
+  "complexidades": ["Baixa", "Alta"],
+  "operacoes": [
+    "Insercao",
+    "InsercaoLote",
+    "ConsultaPorId",
+    "ConsultaPropriedade",
+    "ConsultaAninhada",
+    "Atualizacao",
+    "Exclusao",
+    "CargaConcorrente"
+  ],
+  "repeticoes": 2,
+  "warmupIteracoes": 1,
+  "vus": 4,
+  "duracaoSegundosPorExecucao": 5,
+  "exclusaoIteracoesPorVu": 10,
+  "batchSize": 20,
+  "sampleSize": 100,
+  "payloadPoolSize": 500,
+  "margemResultadoSemelhantePercentual": 5,
+  "statsPollingMs": 500,
+  "resultsDir": "results",
+  "performanceTestsDir": "performance-tests"
+}

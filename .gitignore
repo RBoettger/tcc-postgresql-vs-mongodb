@@ -1,0 +1,36 @@
+# .NET
+bin/
+obj/
+*.user
+
+# Dados gerados (determinísticos — recriados a cada execução do Runner)
+performance-tests/data/
+
+# Resultados do experimento (o autor decide o que versionar; por padrão,
+# resultados brutos/consolidados/gráficos não entram no controle de versão)
+results/raw/*.csv
+results/raw/k6-summaries/
+results/raw/explain/
+results/raw/run-metadata.json
+results/consolidated/*.csv
+results/charts/*.png
+results/analysis/*.md
+!results/raw/.gitkeep
+!results/consolidated/.gitkeep
+!results/charts/.gitkeep
+!results/analysis/.gitkeep
+
+# Execuções auxiliares (validação de pipeline, execuções incompletas) — nunca
+# são o dado final do TCC
+results/_quick-validation/
+results/_crashed-run-partial/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+
+# SO / editores
+.DS_Store
+.vscode/
+.idea/
